@@ -164,7 +164,7 @@ namespace Microsoft.Xna.Framework.Audio
                 throw new ArgumentException("Ensure that the buffer length is non-zero.", "buffer");
 
             var blockAlign = (int)channels * 2;
-            if ((buffer.Length % blockAlign) != 0)
+            if ((count % blockAlign) != 0)
                 throw new ArgumentException("Ensure that the buffer meets the block alignment requirements for the number of channels.", "buffer");
 
             if (count <= 0)
@@ -177,7 +177,7 @@ namespace Microsoft.Xna.Framework.Audio
             if (((ulong)count + (ulong)offset) > (ulong)buffer.Length)
                 throw new ArgumentException("Ensure that the offset+count region lines within the buffer.", "offset");
 
-            var totalSamples = buffer.Length / blockAlign;
+            var totalSamples = count / blockAlign;
 
             if (loopStart < 0)
                 throw new ArgumentException("The loopStart cannot be negative.", "loopStart");
@@ -457,7 +457,7 @@ namespace Microsoft.Xna.Framework.Audio
             set
             {
                 if (value <= 0f)
-                    throw new ArgumentOutOfRangeException ("value of DistanceScale");
+                    throw new ArgumentOutOfRangeException ("value", "value of DistanceScale");
 
                 _distanceScale = value;
             }
@@ -481,7 +481,7 @@ namespace Microsoft.Xna.Framework.Audio
                 //   although the documentation does not say it throws an error we will anyway
                 //   just so it is like the DistanceScale
                 if (value < 0.0f)
-                    throw new ArgumentOutOfRangeException ("value of DopplerScale");
+                    throw new ArgumentOutOfRangeException ("value", "value of DopplerScale");
 
                 _dopplerScale = value;
             }

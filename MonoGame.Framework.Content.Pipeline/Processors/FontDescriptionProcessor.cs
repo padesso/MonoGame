@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
-using MonoGame.Utilities;
+using MonoGame.Framework.Utilities;
 using Glyph = Microsoft.Xna.Framework.Content.Pipeline.Graphics.Glyph;
 
 namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
@@ -46,6 +46,7 @@ namespace Microsoft.Xna.Framework.Content.Pipeline.Processors
                 {
                     directories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Fonts"));
                     directories.Add("/Library/Fonts");
+                    directories.Add("/System/Library/Fonts/Supplemental");
                 }
 
                 foreach (var dir in directories)

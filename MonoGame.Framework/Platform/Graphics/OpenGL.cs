@@ -8,7 +8,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MonoGame.Utilities;
+using MonoGame.Framework.Utilities;
 
 #if __IOS__ || __TVOS__ || MONOMAC
 using ObjCRuntime;
@@ -315,6 +315,7 @@ namespace MonoGame.OpenGL
     {
         ArrayBufferBinding = 0x8894,
         MaxTextureImageUnits = 0x8872,
+        MaxCombinedTextureImageUnits = 0x8B4D,
         MaxVertexAttribs = 0x8869,
         MaxTextureSize = 0x0D33,
         MaxDrawBuffers = 0x8824,
@@ -325,8 +326,10 @@ namespace MonoGame.OpenGL
 
     internal enum StringName
     {
-        Extensions = 0x1F03,
+        Vendor = 0x1F00,
+        Renderer = 0x1F01,
         Version = 0x1F02,
+        Extensions = 0x1F03,
     }
 
     internal enum FramebufferAttachment
@@ -1221,6 +1224,13 @@ namespace MonoGame.OpenGL
         [System.Security.SuppressUnmanagedCodeSecurity()]
         [UnmanagedFunctionPointer(callingConvention)]
         [MonoNativeFunctionWrapper]
+        internal delegate void DrawElementsInstancedBaseInstanceDelegate(GLPrimitiveType primitiveType, int count, DrawElementsType elementType,
+            IntPtr offset, int instanceCount, int baseInstance);
+        internal static DrawElementsInstancedBaseInstanceDelegate DrawElementsInstancedBaseInstance;
+
+        [System.Security.SuppressUnmanagedCodeSecurity()]
+        [UnmanagedFunctionPointer(callingConvention)]
+        [MonoNativeFunctionWrapper]
         internal delegate void VertexAttribDivisorDelegate(int location, int frequency);
         internal static VertexAttribDivisorDelegate VertexAttribDivisor;
 
@@ -1385,7 +1395,9 @@ namespace MonoGame.OpenGL
             try {
                 DrawElementsInstanced = LoadFunction<DrawElementsInstancedDelegate> ("glDrawElementsInstanced");
                 VertexAttribDivisor = LoadFunction<VertexAttribDivisorDelegate> ("glVertexAttribDivisor");
-            } catch (EntryPointNotFoundException) {
+                DrawElementsInstancedBaseInstance = LoadFunction<DrawElementsInstancedBaseInstanceDelegate>("glDrawElementsInstancedBaseInstance");
+            }
+            catch (EntryPointNotFoundException) {
                 // this will be detected in the initialization of GraphicsCapabilities
             }
 
@@ -1575,7 +1587,7 @@ namespace MonoGame.OpenGL
         {
             int length = 0;
             GetProgram(programId, GetProgramParameterName.LogLength, out length);
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(length, length);
             GetProgramInfoLogInternal (programId, length, IntPtr.Zero, sb);
             return sb.ToString();
         }
@@ -1583,7 +1595,7 @@ namespace MonoGame.OpenGL
         internal static string GetShaderInfoLog (int shaderId) {
             int length = 0;
             GetShader(shaderId, ShaderParameter.LogLength, out length);
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(length, length);
             GetShaderInfoLogInternal (shaderId, length, IntPtr.Zero, sb);
             return sb.ToString();
         }

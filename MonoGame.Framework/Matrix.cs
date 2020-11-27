@@ -188,6 +188,13 @@ namespace Microsoft.Xna.Framework
 
         #region Indexers
 
+        /// <summary>
+        /// Get or set the matrix element at the given index, indexed in row major order.
+        /// </summary>
+        /// <param name="index">The linearized, zero-based index of the matrix element.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If the index is less than <code>0</code> or larger than <code>15</code>.
+        /// </exception>
         public float this[int index]
         {
             get
@@ -239,6 +246,14 @@ namespace Microsoft.Xna.Framework
             }
         }
 
+        /// <summary>
+        /// Get or set the value at the specified row and column (indices are zero-based).
+        /// </summary>
+        /// <param name="row">The row of the element.</param>
+        /// <param name="column">The column of the element.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If the row or column is less than <code>0</code> or larger than <code>3</code>.
+        /// </exception>
         public float this[int row, int column]
         {
             get
@@ -899,7 +914,7 @@ namespace Microsoft.Xna.Framework
         /// <param name="width">Width of the viewing volume.</param>
         /// <param name="height">Height of the viewing volume.</param>
         /// <param name="nearPlaneDistance">Distance to the near plane.</param>
-        /// <param name="farPlaneDistance">Distance to the far plane.</param>
+        /// <param name="farPlaneDistance">Distance to the far plane, or <see cref="float.PositiveInfinity"/>.</param>
         /// <param name="result">The new projection <see cref="Matrix"/> for perspective view as an output parameter.</param>
         public static void CreatePerspective(float width, float height, float nearPlaneDistance, float farPlaneDistance, out Matrix result)
         {
@@ -915,15 +930,18 @@ namespace Microsoft.Xna.Framework
 		    {
 		        throw new ArgumentException("nearPlaneDistance >= farPlaneDistance");
 		    }
-		    result.M11 = (2f * nearPlaneDistance) / width;
-		    result.M12 = result.M13 = result.M14 = 0f;
-		    result.M22 = (2f * nearPlaneDistance) / height;
-		    result.M21 = result.M23 = result.M24 = 0f;
-		    result.M33 = farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
-		    result.M31 = result.M32 = 0f;
-		    result.M34 = -1f;
-		    result.M41 = result.M42 = result.M44 = 0f;
-		    result.M43 = (nearPlaneDistance * farPlaneDistance) / (nearPlaneDistance - farPlaneDistance);
+
+            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
+
+            result.M11 = (2.0f * nearPlaneDistance) / width;
+            result.M12 = result.M13 = result.M14 = 0.0f;
+            result.M22 = (2.0f * nearPlaneDistance) / height;
+            result.M21 = result.M23 = result.M24 = 0.0f;            
+            result.M33 = negFarRange;
+            result.M31 = result.M32 = 0.0f;
+            result.M34 = -1.0f;
+            result.M41 = result.M42 = result.M44 = 0.0f;
+            result.M43 = nearPlaneDistance * negFarRange;
         }
 
         /// <summary>
@@ -932,7 +950,7 @@ namespace Microsoft.Xna.Framework
         /// <param name="fieldOfView">Field of view in the y direction in radians.</param>
         /// <param name="aspectRatio">Width divided by height of the viewing volume.</param>
         /// <param name="nearPlaneDistance">Distance to the near plane.</param>
-        /// <param name="farPlaneDistance">Distance to the far plane.</param>
+        /// <param name="farPlaneDistance">Distance to the far plane, or <see cref="float.PositiveInfinity"/>.</param>
         /// <returns>The new projection <see cref="Matrix"/> for perspective view with FOV.</returns>
         public static Matrix CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance)
         {
@@ -947,7 +965,7 @@ namespace Microsoft.Xna.Framework
         /// <param name="fieldOfView">Field of view in the y direction in radians.</param>
         /// <param name="aspectRatio">Width divided by height of the viewing volume.</param>
         /// <param name="nearPlaneDistance">Distance of the near plane.</param>
-        /// <param name="farPlaneDistance">Distance of the far plane.</param>
+        /// <param name="farPlaneDistance">Distance of the far plane, or <see cref="float.PositiveInfinity"/>.</param>
         /// <param name="result">The new projection <see cref="Matrix"/> for perspective view with FOV as an output parameter.</param>
         public static void CreatePerspectiveFieldOfView(float fieldOfView, float aspectRatio, float nearPlaneDistance, float farPlaneDistance, out Matrix result)
         {
@@ -967,17 +985,20 @@ namespace Microsoft.Xna.Framework
 		    {
 		        throw new ArgumentException("nearPlaneDistance >= farPlaneDistance");
 		    }
-		    float num = 1f / ((float) Math.Tan((double) (fieldOfView * 0.5f)));
-		    float num9 = num / aspectRatio;
-		    result.M11 = num9;
-		    result.M12 = result.M13 = result.M14 = 0;
-		    result.M22 = num;
-		    result.M21 = result.M23 = result.M24 = 0;
-		    result.M31 = result.M32 = 0f;
-		    result.M33 = farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
-		    result.M34 = -1;
-		    result.M41 = result.M42 = result.M44 = 0;
-		    result.M43 = (nearPlaneDistance * farPlaneDistance) / (nearPlaneDistance - farPlaneDistance);
+
+            var yScale = 1.0f / (float)Math.Tan((double)fieldOfView * 0.5f);
+            var xScale = yScale / aspectRatio;
+            var negFarRange = float.IsPositiveInfinity(farPlaneDistance) ? -1.0f : farPlaneDistance / (nearPlaneDistance - farPlaneDistance);
+
+            result.M11 = xScale;
+            result.M12 = result.M13 = result.M14 = 0.0f;
+            result.M22 = yScale;
+            result.M21 = result.M23 = result.M24 = 0.0f;
+            result.M31 = result.M32 = 0.0f;            
+            result.M33 = negFarRange;
+            result.M34 = -1.0f;
+            result.M41 = result.M42 = result.M44 = 0.0f;
+            result.M43 = nearPlaneDistance * negFarRange;
         }
 
         /// <summary>
@@ -996,6 +1017,7 @@ namespace Microsoft.Xna.Framework
             CreatePerspectiveOffCenter(left, right, bottom, top, nearPlaneDistance, farPlaneDistance, out result);
             return result;
         }
+
         /// <summary>
         /// Creates a new projection <see cref="Matrix"/> for customized perspective view.
         /// </summary>
